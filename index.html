@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>In Loving Memory - Forever In Our Hearts</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        heading: ['Cinzel', 'serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        memorial: {
+                            50: '#faf8f5',
+                            100: '#f4efe6',
+                            200: '#e7dcc9',
+                            300: '#d7c4a5',
+                            400: '#c3a67d',
+                            500: '#b28e5d',
+                            600: '#a1784d',
+                            700: '#835f3e',
+                            800: '#6d4e36',
+                            900: '#5a412f',
+                            950: '#322217',
+                        },
+                        amberGold: '#d97706',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        .bg-grid-pattern {
+            background-image: radial-gradient(rgba(178, 142, 93, 0.15) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .candle-flame {
+            animation: flicker 1.5s infinite alternate ease-in-out;
+            transform-origin: center bottom;
+        }
+
+        @keyframes flicker {
+            0% { transform: scale(1) rotate(-1deg); opacity: 0.95; }
+            20% { transform: scale(1.05) rotate(1deg); opacity: 1; }
+            40% { transform: scale(0.98) rotate(-2deg); opacity: 0.9; }
+            60% { transform: scale(1.02) rotate(1deg); opacity: 0.98; }
+            80% { transform: scale(1.01) rotate(-0.5deg); opacity: 0.94; }
+            100% { transform: scale(1.04) rotate(1.5deg); opacity: 1; }
+        }
+
+        .candle-glow {
+            animation: pulseGlow 2.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes pulseGlow {
+            0% { opacity: 0.4; transform: scale(0.95); }
+            100% { opacity: 0.85; transform: scale(1.15); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #faf8f5;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d7c4a5;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #b28e5d;
+        }
+    </style>
+</head>
+<body class="bg-memorial-50 text-stone-800 font-sans antialiased min-h-screen selection:bg-memorial-200 flex flex-col justify-between"
+      x-data="memorialApp()"
+      x-init="initApp()">
+
+    <!-- Ambient Floating Stars Canvas Background -->
+    <canvas id="ambientCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-40"></canvas>
+
+    <div class="relative z-10 flex-grow">
+        <!-- Top Announcement / Navigation Header -->
+        <header class="bg-stone-900 text-stone-100 border-b border-memorial-700/40 sticky top-0 z-40 backdrop-blur-md bg-opacity-90">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-memorial-600 flex items-center justify-center text-amber-200 shadow-inner">
+                        <i data-lucide="heart" class="w-4 h-4 fill-amber-200 text-transparent"></i>
+                    </div>
+                    <span class="font-heading tracking-wider font-semibold text-stone-100 text-sm sm:text-base">Forever In Our Hearts</span>
+                </div>
+
+                <nav class="hidden md:flex items-center space-x-6 text-sm">
+                    <a href="#tribute" class="hover:text-memorial-300 transition-colors">Hero</a>
+                    <a href="#timeline" class="hover:text-memorial-300 transition-colors">Life Story</a>
+                    <a href="#gallery" class="hover:text-memorial-300 transition-colors">Media Vault</a>
+                    <a href="#guestbook" class="hover:text-memorial-300 transition-colors">Guestbook</a>
+                </nav>
+
+                <div class="flex items-center space-x-2">
+                    <button @click="openMediaModal = true" class="inline-flex items-center space-x-2 bg-memorial-600 hover:bg-memorial-700 text-white text-xs sm:text-sm px-3 py-1.5 rounded-full shadow transition transform active:scale-95">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>Add Photo / Video</span>
+                    </button>
+                    
+                    <!-- Mobile Menu Button -->
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden p-2 text-stone-300 hover:text-white">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Navigation Drawer -->
+            <div x-show="mobileMenuOpen" x-cloak x-transition class="md:hidden bg-stone-950 border-b border-stone-800 px-4 py-3 space-y-2 text-sm">
+                <a href="#tribute" @click="mobileMenuOpen = false" class="block text-stone-200 py-1 hover:text-memorial-300">Hero</a>
+                <a href="#timeline" @click="mobileMenuOpen = false" class="block text-stone-200 py-1 hover:text-memorial-300">Life Story & Timeline</a>
+                <a href="#gallery" @click="mobileMenuOpen = false" class="block text-stone-200 py-1 hover:text-memorial-300">Photo & Video Vault</a>
+                <a href="#guestbook" @click="mobileMenuOpen = false" class="block text-stone-200 py-1 hover:text-memorial-300">Guestbook & Tributes</a>
+            </div>
+        </header>
+
+        <!-- Main Hero Section -->
+        <section id="tribute" class="relative bg-stone-900 text-white py-16 lg:py-24 overflow-hidden border-b border-memorial-800">
+            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-stone-800 via-stone-900 to-black opacity-80"></div>
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+                
+                <!-- Main Portrait Frame -->
+                <div class="relative inline-block mb-8 group">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-memorial-400 via-amber-200 to-memorial-600 rounded-full blur-md opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+                    <div class="relative w-44 h-44 sm:w-56 sm:h-56 rounded-full overflow-hidden border-4 border-stone-800 shadow-2xl mx-auto bg-stone-950">
+                        <img :src="memorialData.portraitUrl" 
+                             alt="Daddy's Portrait" 
+                             class="w-full h-full object-cover object-center"
+                             onerror="this.src='https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=600'">
+                    </div>
+                    <button @click="openEditHeader = true" class="absolute bottom-2 right-2 bg-stone-800 hover:bg-stone-700 text-amber-200 p-2.5 rounded-full border border-memorial-500 shadow-lg transition" title="Edit Profile Details">
+                        <i data-lucide="edit-3" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Names & Dates -->
+                <h1 class="font-heading text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-wide text-stone-100 mb-2" x-text="memorialData.fullName">
+                    Forever Our Hero & Beloved Father
+                </h1>
+                <p class="font-serif italic text-lg sm:text-xl text-memorial-300 mb-4" x-text="memorialData.subtitle">
+                    Loving Father, Husband & Guiding Light
+                </p>
+
+                <div class="inline-flex items-center space-x-2 bg-stone-800/80 border border-memorial-700/50 rounded-full px-5 py-2 text-stone-300 text-xs sm:text-sm mb-8">
+                    <i data-lucide="calendar" class="w-4 h-4 text-memorial-400"></i>
+                    <span x-text="memorialData.birthDate + ' – ' + memorialData.passedDate">Born ~ September 20, 2015</span>
+                    <span class="text-memorial-500">•</span>
+                    <span class="text-amber-200/90 font-medium" x-text="calculateDaysPassed() + ' Days In Loving Memory'"></span>
+                </div>
+
+                <!-- Quote Box -->
+                <div class="max-w-2xl mx-auto bg-stone-950/60 border-l-4 border-memorial-500 p-6 rounded-r-xl shadow-inner text-stone-300 font-serif italic text-base sm:text-lg mb-10">
+                    <p x-text="'&ldquo;' + memorialData.quote + '&rdquo;'">&ldquo;Your love continues to light our path every single day. We carry your legacy in our hearts forever.&rdquo;</p>
+                </div>
+
+                <!-- Interactive Candle Memorial Counter -->
+                <div class="inline-flex flex-col items-center p-6 bg-stone-950/80 rounded-2xl border border-stone-800 shadow-2xl backdrop-blur-sm">
+                    <p class="text-xs font-semibold uppercase tracking-widest text-memorial-300 mb-4">Light a Virtual Candle for Daddy</p>
+                    
+                    <!-- Candle SVG & Flame Effect -->
+                    <div class="relative w-16 h-28 cursor-pointer group mb-4" @click="lightCandle()">
+                        <!-- Flame glow -->
+                        <div class="candle-glow absolute -top-4 left-1/2 -translate-x-1/2 w-16 h-16 bg-amber-500/30 rounded-full blur-xl pointer-events-none"></div>
+                        <!-- Flame -->
+                        <div class="candle-flame absolute top-0 left-1/2 -translate-x-1/2 w-5 h-8 bg-gradient-to-t from-amber-600 via-amber-400 to-yellow-100 rounded-full shadow-[0_0_15px_#f59e0b]"></div>
+                        <!-- Wick -->
+                        <div class="absolute top-7 left-1/2 -translate-x-1/2 w-0.5 h-3 bg-stone-400"></div>
+                        <!-- Pillar -->
+                        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-18 bg-gradient-to-r from-amber-100 via-stone-200 to-amber-200 rounded-t-sm shadow-inner">
+                            <div class="w-full h-full bg-stone-950/10 rounded-t-sm"></div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <button @click="lightCandle()" class="px-5 py-2.5 bg-gradient-to-r from-memorial-600 to-memorial-700 hover:from-memorial-500 hover:to-memorial-600 text-white rounded-xl font-medium text-xs sm:text-sm shadow-md transition transform active:scale-95 flex items-center space-x-2">
+                            <i data-lucide="flame" class="w-4 h-4 text-amber-300 fill-amber-300"></i>
+                            <span>Light a Candle</span>
+                        </button>
+                        <div class="text-left pl-3 border-l border-stone-800">
+                            <span class="block text-2xl font-bold font-heading text-amber-200" x-text="candlesLit">0</span>
+                            <span class="block text-xs text-stone-400">Candles Burning</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content Grid -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+            
+            <!-- Letter to Kids & Bio Section -->
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Main Biography Box -->
+                <div class="lg:col-span-2 bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-stone-200 space-y-6">
+                    <div class="flex items-center justify-between border-b border-stone-100 pb-4">
+                        <h2 class="font-heading text-2xl font-bold text-stone-900 flex items-center space-x-2">
+                            <i data-lucide="book-open" class="w-6 h-6 text-memorial-600"></i>
+                            <span>About Daddy & His Legacy</span>
+                        </h2>
+                        <button @click="openEditHeader = true" class="text-xs text-memorial-600 hover:text-memorial-800 font-medium flex items-center space-x-1">
+                            <i data-lucide="edit" class="w-3.5 h-3.5"></i>
+                            <span>Edit Story</span>
+                        </button>
+                    </div>
+
+                    <div class="prose prose-stone max-w-none text-stone-700 leading-relaxed font-sans space-y-4 whitespace-pre-line" x-text="memorialData.biography">
+                        <!-- Biography content injected here -->
+                    </div>
+                </div>
+
+                <!-- Kids Dedicated Message Box -->
+                <div class="bg-gradient-to-br from-memorial-100 to-stone-100 rounded-2xl p-6 sm:p-8 border border-memorial-200/80 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="w-10 h-10 rounded-full bg-memorial-600 flex items-center justify-center text-white mb-4 shadow">
+                            <i data-lucide="sparkles" class="w-5 h-5"></i>
+                        </div>
+                        <h3 class="font-heading text-xl font-bold text-stone-900 mb-3">A Note For My Kids</h3>
+                        <p class="font-serif italic text-stone-700 text-sm sm:text-base leading-relaxed mb-6" x-text="memorialData.kidsMessage">
+                            "Always remember how endlessly your daddy loved you. Every smile, laugh, and milestone you reach makes him proud from heaven."
+                        </p>
+                    </div>
+
+                    <div class="pt-4 border-t border-memorial-200/60 flex items-center justify-between text-xs text-stone-600">
+                        <span>Created with love ❤️</span>
+                        <span class="font-medium text-memorial-800">Forever Free & Eternal</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Life Timeline Section -->
+            <section id="timeline" class="bg-white rounded-2xl p-6 sm:p-10 shadow-sm border border-stone-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-stone-100 pb-6 mb-8 gap-4">
+                    <div>
+                        <h2 class="font-heading text-2xl font-bold text-stone-900 flex items-center space-x-2">
+                            <i data-lucide="milestone" class="w-6 h-6 text-memorial-600"></i>
+                            <span>Life Milestones & Memories</span>
+                        </h2>
+                        <p class="text-sm text-stone-500 mt-1">Key moments, stories, and unforgettable memories</p>
+                    </div>
+                    <button @click="openTimelineModal = true" class="inline-flex items-center space-x-2 bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs sm:text-sm px-4 py-2 rounded-xl border border-stone-300 font-medium transition">
+                        <i data-lucide="plus-circle" class="w-4 h-4 text-memorial-600"></i>
+                        <span>Add New Milestone</span>
+                    </button>
+                </div>
+
+                <!-- Timeline Items list -->
+                <div class="relative border-l-2 border-memorial-200 ml-4 sm:ml-8 space-y-8">
+                    <template x-for="(item, index) in timelineItems" :key="item.id">
+                        <div class="relative pl-6 sm:pl-8 group">
+                            <!-- Bullet Icon -->
+                            <div class="absolute -left-[17px] top-1.5 w-8 h-8 rounded-full bg-memorial-100 border-2 border-memorial-600 flex items-center justify-center text-memorial-700 shadow-sm group-hover:scale-110 transition">
+                                <i data-lucide="heart" class="w-3.5 h-3.5 fill-memorial-600"></i>
+                            </div>
+
+                            <div class="bg-stone-50 hover:bg-stone-100/80 p-5 rounded-2xl border border-stone-200 transition">
+                                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                    <span class="text-xs font-semibold uppercase tracking-wider text-memorial-700 bg-memorial-100 px-2.5 py-1 rounded-md" x-text="item.year"></span>
+                                    <button @click="deleteTimelineItem(item.id)" class="text-stone-400 hover:text-red-500 text-xs p-1" title="Remove memory">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                                <h3 class="font-heading font-bold text-lg text-stone-900 mb-2" x-text="item.title"></h3>
+                                <p class="text-stone-600 text-sm sm:text-base leading-relaxed whitespace-pre-line" x-text="item.description"></p>
+                            </div>
+                        </div>
+                    </template>
+
+                    <div x-show="timelineItems.length === 0" class="text-center py-8 text-stone-400 italic text-sm">
+                        No milestones added yet. Click 'Add New Milestone' above to start building his life story!
+                    </div>
+                </div>
+            </section>
+
+            <!-- Media Vault Section (Photos & Videos) -->
+            <section id="gallery" class="space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+                    <div>
+                        <h2 class="font-heading text-2xl font-bold text-stone-900 flex items-center space-x-2">
+                            <i data-lucide="image" class="w-6 h-6 text-memorial-600"></i>
+                            <span>Unlimited Media Vault</span>
+                        </h2>
+                        <p class="text-sm text-stone-500 mt-1">Upload unlimited pictures or embed YouTube video memories for the kids</p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3">
+                        <!-- Filter Tabs -->
+                        <div class="bg-stone-100 p-1 rounded-xl flex space-x-1 text-xs font-medium text-stone-600">
+                            <button @click="mediaFilter = 'all'" :class="{'bg-white text-stone-900 shadow-sm': mediaFilter === 'all'}" class="px-3 py-1.5 rounded-lg transition">All</button>
+                            <button @click="mediaFilter = 'image'" :class="{'bg-white text-stone-900 shadow-sm': mediaFilter === 'image'}" class="px-3 py-1.5 rounded-lg transition">Photos</button>
+                            <button @click="mediaFilter = 'video'" :class="{'bg-white text-stone-900 shadow-sm': mediaFilter === 'video'}" class="px-3 py-1.5 rounded-lg transition">Videos</button>
+                        </div>
+
+                        <button @click="openMediaModal = true" class="inline-flex items-center space-x-2 bg-memorial-600 hover:bg-memorial-700 text-white text-xs sm:text-sm px-4 py-2 rounded-xl font-medium shadow-md transition">
+                            <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                            <span>Add Photo / Video</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Gallery Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <template x-for="item in filteredMedia" :key="item.id">
+                        <div class="bg-white rounded-2xl overflow-hidden border border-stone-200 shadow-sm hover:shadow-md transition group flex flex-col justify-between">
+                            
+                            <!-- Media Display container -->
+                            <div class="relative aspect-square bg-stone-900 overflow-hidden cursor-pointer" @click="viewMedia(item)">
+                                <template x-if="item.type === 'image'">
+                                    <img :src="item.url" :alt="item.title" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                </template>
+
+                                <template x-if="item.type === 'video'">
+                                    <div class="w-full h-full flex items-center justify-center bg-stone-950 text-white relative">
+                                        <img :src="getVideoThumbnail(item.url)" class="w-full h-full object-cover opacity-60">
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <div class="w-12 h-12 rounded-full bg-memorial-600/90 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition">
+                                                <i data-lucide="play" class="w-6 h-6 fill-white ml-1"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <span class="absolute top-2 right-2 bg-stone-900/80 text-white text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded backdrop-blur-xs" x-text="item.type"></span>
+                            </div>
+
+                            <!-- Media Info Footer -->
+                            <div class="p-4 flex-grow flex flex-col justify-between space-y-2">
+                                <div>
+                                    <h4 class="font-heading font-semibold text-stone-900 text-sm line-clamp-1" x-text="item.title || 'Untitled Memory'"></h4>
+                                    <p class="text-stone-500 text-xs line-clamp-2 mt-1" x-text="item.caption || 'No description added'"></p>
+                                </div>
+                                <div class="flex items-center justify-between pt-2 border-t border-stone-100 text-[11px] text-stone-400">
+                                    <span x-text="item.date"></span>
+                                    <button @click="deleteMedia(item.id)" class="text-stone-400 hover:text-red-500 p-1" title="Delete media">
+                                        <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </template>
+                </div>
+
+                <div x-show="filteredMedia.length === 0" class="bg-white rounded-2xl p-12 text-center border border-dashed border-stone-300">
+                    <i data-lucide="image-off" class="w-12 h-12 text-stone-300 mx-auto mb-3"></i>
+                    <h3 class="font-heading text-stone-600 font-semibold mb-1">No media files found</h3>
+                    <p class="text-stone-400 text-xs max-w-sm mx-auto mb-4">Add photos or videos of their daddy so your children can watch and cherish them forever.</p>
+                    <button @click="openMediaModal = true" class="px-4 py-2 bg-memorial-600 text-white text-xs rounded-xl hover:bg-memorial-700">Add First Photo</button>
+                </div>
+            </section>
+
+            <!-- Digital Guestbook & Words of Comfort -->
+            <section id="guestbook" class="bg-white rounded-2xl p-6 sm:p-10 shadow-sm border border-stone-200 space-y-8">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-stone-100 pb-6 gap-4">
+                    <div>
+                        <h2 class="font-heading text-2xl font-bold text-stone-900 flex items-center space-x-2">
+                            <i data-lucide="message-square" class="w-6 h-6 text-memorial-600"></i>
+                            <span>Words of Comfort & Tributes</span>
+                        </h2>
+                        <p class="text-sm text-stone-500 mt-1">Leave a message, memory, or prayer for his children to read</p>
+                    </div>
+
+                    <button @click="openGuestbookModal = true" class="inline-flex items-center space-x-2 bg-stone-900 hover:bg-stone-800 text-white text-xs sm:text-sm px-4 py-2 rounded-xl font-medium shadow-md transition">
+                        <i data-lucide="pen-tool" class="w-4 h-4 text-amber-300"></i>
+                        <span>Write a Tribute</span>
+                    </button>
+                </div>
+
+                <!-- Guestbook Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <template x-for="entry in guestbookEntries" :key="entry.id">
+                        <div class="bg-stone-50 p-6 rounded-2xl border border-stone-200/80 shadow-xs flex flex-col justify-between space-y-4">
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-9 h-9 rounded-full bg-memorial-200 text-memorial-800 font-bold flex items-center justify-center text-sm" x-text="entry.name.charAt(0)"></div>
+                                        <div>
+                                            <h4 class="font-heading font-bold text-stone-900 text-sm" x-text="entry.name"></h4>
+                                            <p class="text-[11px] text-stone-400" x-text="entry.relation"></p>
+                                        </div>
+                                    </div>
+                                    <span class="text-[11px] text-stone-400" x-text="entry.date"></span>
+                                </div>
+                                <p class="text-stone-700 text-sm leading-relaxed font-sans italic" x-text="'&ldquo;' + entry.message + '&rdquo;'"></p>
+                            </div>
+
+                            <div class="flex justify-end border-t border-stone-200/60 pt-2">
+                                <button @click="deleteGuestbookEntry(entry.id)" class="text-stone-400 hover:text-red-500 text-xs p-1">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <div x-show="guestbookEntries.length === 0" class="text-center py-8 text-stone-400 italic text-sm">
+                    No tributes written yet. Be the first to leave a warm message for the kids!
+                </div>
+            </section>
+
+            <!-- Data Management / Backup Banner -->
+            <section class="bg-stone-900 rounded-2xl p-6 sm:p-8 text-stone-100 flex flex-col md:flex-row items-center justify-between gap-6 border border-stone-800 shadow-xl">
+                <div class="space-y-2 text-center md:text-left">
+                    <h3 class="font-heading text-xl font-bold text-amber-200 flex items-center justify-center md:justify-start space-x-2">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                        <span>100% Free & Private Data Control</span>
+                    </h3>
+                    <p class="text-stone-300 text-sm max-w-2xl">
+                        All photos, videos, and memories are saved securely in your web browser. You can export a backup JSON file at any time to preserve everything forever or restore it on another device.
+                    </p>
+                </div>
+                <div class="flex items-center space-x-3 shrink-0">
+                    <button @click="exportData()" class="px-4 py-2.5 bg-memorial-600 hover:bg-memorial-500 text-white rounded-xl text-xs font-semibold shadow flex items-center space-x-2 transition">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span>Export Backup</span>
+                    </button>
+                    <label class="px-4 py-2.5 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-xl text-xs font-semibold cursor-pointer shadow flex items-center space-x-2 transition border border-stone-700">
+                        <i data-lucide="upload" class="w-4 h-4"></i>
+                        <span>Restore Backup</span>
+                        <input type="file" @change="importData($event)" accept=".json" class="hidden">
+                    </label>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-stone-950 text-stone-400 py-12 border-t border-stone-800 mt-20 text-center text-xs space-y-3">
+            <div class="max-w-7xl mx-auto px-4 flex flex-col items-center justify-center space-y-2">
+                <div class="w-8 h-8 rounded-full bg-memorial-700/40 flex items-center justify-center text-memorial-300">
+                    <i data-lucide="heart" class="w-4 h-4 fill-memorial-300"></i>
+                </div>
+                <p class="font-heading font-semibold text-stone-300 text-sm">Dedicated to the Loving Memory of Daddy</p>
+                <p class="text-stone-500">Passed away September 20, 2015 • Forever Loved & Always Remembered</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- MODALS SECTION -->
+
+    <!-- 1. Edit Profile / Header Modal -->
+    <div x-show="openEditHeader" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl border border-stone-200" @click.away="openEditHeader = false">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-heading font-bold text-lg text-stone-900">Edit Memorial Details</h3>
+                <button @click="openEditHeader = false" class="text-stone-400 hover:text-stone-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <div class="space-y-4 text-sm">
+                <div>
+                    <label class="block font-medium text-stone-700 mb-1">Full Name</label>
+                    <input type="text" x-model="memorialData.fullName" class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none">
+                </div>
+                <div>
+                    <label class="block font-medium text-stone-700 mb-1">Subtitle / Relation</label>
+                    <input type="text" x-model="memorialData.subtitle" class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-medium text-stone-700 mb-1">Birth Date</label>
+                        <input type="text" x-model="memorialData.birthDate" class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-stone-700 mb-1">Passed Date</label>
+                        <input type="text" x-model="memorialData.passedDate" class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-medium text-stone-700 mb-1">Portrait Image URL / Base64</label>
+                    <input type="text" x-model="memorialData.portraitUrl" placeholder="https://..." class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none">
+                </div>
+                <div>
+                    <label class="block font-medium text-stone-700 mb-1">Memorial Quote</label>
+                    <textarea x-model="memorialData.quote" rows="2" class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none"></textarea>
+                </div>
+                <div>
+                    <label class="block font-medium text-stone-700 mb-1">Biography / Life Story</label>
+                    <textarea x-model="memorialData.biography" rows="4" class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none"></textarea>
+                </div>
+                <div>
+                    <label class="block font-medium text-stone-700 mb-1">Special Message for the Kids</label>
+                    <textarea x-model="memorialData.kidsMessage" rows="3" class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-3 border-t">
+                <button @click="saveHeaderDetails()" class="px-5 py-2 bg-memorial-600 hover:bg-memorial-700 text-white rounded-xl text-sm font-semibold">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Add Media Modal (Photo/Video Upload) -->
+    <div x-show="openMediaModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl border border-stone-200" @click.away="openMediaModal = false">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-heading font-bold text-lg text-stone-900">Add Photo or Video</h3>
+                <button @click="openMediaModal = false" class="text-stone-400 hover:text-stone-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <div class="space-y-4 text-sm">
+                <div>
+                    <label class="block font-medium text-stone-700 mb-1">Media Type</label>
+                    <select x-model="newMedia.type" class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none bg-white">
+                        <option value="image">Photo Image</option>
+                        <option value="video">YouTube Video Link</option>
+                    </select>
+                </div>
+
+                <template x-if="newMedia.type === 'image'">
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block font-medium text-stone-700 mb-1">Upload Photo File</label>
+                            <input type="file" accept="image/*" @change="handleFileUpload($event)" class="w-full text-xs text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-memorial-100 file:text-memorial-700 hover:file:bg-memorial-200">
+                        </div>
+                        <div class="text-center text-xs text-stone-400 uppercase font-semibold">Or</div>
+                        <div>
+                            <label class="block font-medium text-stone-700 mb-1">Image URL</label>
+                            <input type="text" x-model="newMedia.url" placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none">
+                        </div>
+                    </div>
+                </template>
+
+                <template x-if="newMedia.type === 'video'">
+                    <div>
+                        <label class="block font-medium text-stone-700 mb-1">YouTube Video Link or Embed URL</label>
+                        <input type="text" x-model="newMedia.url" placeholder="https://www.youtube.com/watch?v=..." class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none">
+                    </div>
+                </template>
+
+                <div>
+                    <label class="block font-medium text-stone-700 mb-1">Title / Caption</label>
+                    <input type="text" x-model="newMedia.title" placeholder="e.g. Fishing trip summer 2012" class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block font-medium text-stone-700 mb-1">Short Memory Description</label>
+                    <textarea x-model="newMedia.caption" rows="2" placeholder="Tell the kids what daddy was doing here..." class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-3 border-t">
+                <button @click="addMediaItem()" class="px-5 py-2 bg-memorial-600 hover:bg-memorial-700 text-white rounded-xl text-sm font-semibold">Add to Media Vault</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Add Timeline Milestone Modal -->
+    <div x-show="openTimelineModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl border border-stone-200" @click.away="openTimelineModal = false">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-heading font-bold text-lg text-stone-900">Add Milestone Story</h3>
+                <button @click="openTimelineModal = false" class="text-stone-400 hover:text-stone-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <div class="space-y-4 text-sm">
+                <div>
+                    <label class="block font-medium text-stone-700 mb-1">Year / Date</label>
+                    <input type="text" x-model="newTimeline.year" placeholder="e.g. 2014 or Summer 2010" class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none">
+                </div>
+                <div>
+                    <label class="block font-medium text-stone-700 mb-1">Milestone Title</label>
+                    <input type="text" x-model="newTimeline.title" placeholder="e.g. The Day Our First Child Was Born" class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none">
+                </div>
+                <div>
+                    <label class="block font-medium text-stone-700 mb-1">Story & Memory Details</label>
+                    <textarea x-model="newTimeline.description" rows="4" placeholder="Describe this special day..." class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-3 border-t">
+                <button @click="addTimelineItem()" class="px-5 py-2 bg-memorial-600 hover:bg-memorial-700 text-white rounded-xl text-sm font-semibold">Save Milestone</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Add Guestbook Entry Modal -->
+    <div x-show="openGuestbookModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl border border-stone-200" @click.away="openGuestbookModal = false">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-heading font-bold text-lg text-stone-900">Write Words of Comfort</h3>
+                <button @click="openGuestbookModal = false" class="text-stone-400 hover:text-stone-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <div class="space-y-4 text-sm">
+                <div>
+                    <label class="block font-medium text-stone-700 mb-1">Your Name</label>
+                    <input type="text" x-model="newGuestbook.name" placeholder="e.g. Grandma Sarah" class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none">
+                </div>
+                <div>
+                    <label class="block font-medium text-stone-700 mb-1">Relationship to Family</label>
+                    <input type="text" x-model="newGuestbook.relation" placeholder="e.g. Family Friend / Aunt" class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none">
+                </div>
+                <div>
+                    <label class="block font-medium text-stone-700 mb-1">Your Message or Memory</label>
+                    <textarea x-model="newGuestbook.message" rows="4" placeholder="Share a lovely story about daddy..." class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-3 border-t">
+                <button @click="addGuestbookEntry()" class="px-5 py-2 bg-memorial-600 hover:bg-memorial-700 text-white rounded-xl text-sm font-semibold">Post Tribute</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Lightbox Media Viewer Modal -->
+    <div x-show="activeLightbox" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-stone-950/95 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="relative max-w-4xl w-full flex flex-col items-center">
+            <button @click="activeLightbox = null" class="absolute -top-12 right-0 text-white hover:text-amber-200 transition">
+                <i data-lucide="x" class="w-8 h-8"></i>
+            </button>
+
+            <template x-if="activeLightbox && activeLightbox.type === 'image'">
+                <img :src="activeLightbox.url" :alt="activeLightbox.title" class="max-h-[75vh] w-auto rounded-xl object-contain shadow-2xl border border-stone-800">
+            </template>
+
+            <template x-if="activeLightbox && activeLightbox.type === 'video'">
+                <div class="w-full aspect-video rounded-xl overflow-hidden shadow-2xl border border-stone-800 bg-black">
+                    <iframe :src="getEmbedVideoUrl(activeLightbox.url)" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </template>
+
+            <template x-if="activeLightbox">
+                <div class="mt-4 text-center text-white space-y-1">
+                    <h3 class="font-heading text-xl font-bold" x-text="activeLightbox?.title || ''"></h3>
+                    <p class="text-stone-300 text-sm italic" x-text="activeLightbox?.caption || ''"></p>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        function memorialApp() {
+            return {
+                mobileMenuOpen: false,
+                openEditHeader: false,
+                openMediaModal: false,
+                openTimelineModal: false,
+                openGuestbookModal: false,
+                activeLightbox: null,
+                mediaFilter: 'all',
+
+                candlesLit: 142,
+
+                memorialData: {
+                    fullName: "Our Loving Daddy",
+                    subtitle: "Husband, Father & Forever Guiding Star",
+                    birthDate: "May 14, 1982",
+                    passedDate: "September 20, 2015",
+                    portraitUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=600",
+                    quote: "The love of a father remains forever present in the hearts of his children.",
+                    biography: "This online memorial is created so our kids will always have a sacred place to remember, celebrate, and feel close to their daddy.\n\nHe was a man of warmth, kindness, and humor. He loved nature, music, and above all, being a devoted father. September 20, 2015 marked the day he left us in physical body, but his spirit lives eternally through the laughter and lives of his beautiful children.",
+                    kidsMessage: "To my sweet children: Whenever you miss your daddy, look up at the night sky or browse through these cherished photos and memories. He is watching over you with endless pride and unconditional love."
+                },
+
+                mediaItems: [
+                    {
+                        id: 1,
+                        type: 'image',
+                        url: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&q=80&w=800',
+                        title: 'A Beautiful Day in the Park',
+                        caption: 'Daddy loving nature and spending precious quiet moments outdoors.',
+                        date: '2014-08-12'
+                    },
+                    {
+                        id: 2,
+                        type: 'image',
+                        url: 'https://images.unsplash.com/photo-1476703993599-0035a21b17a9?auto=format&fit=crop&q=80&w=800',
+                        title: 'Family Sunset Walk',
+                        caption: 'Holding hands and walking into the sunset.',
+                        date: '2013-06-20'
+                    },
+                    {
+                        id: 3,
+                        type: 'video',
+                        url: 'https://www.youtube.com/watch?v=gXFAVyu2ykg',
+                        title: 'A Song of Remembrance',
+                        caption: 'A comforting musical tribute dedicated in loving memory.',
+                        date: '2015-09-20'
+                    }
+                ],
+
+                timelineItems: [
+                    {
+                        id: 1,
+                        year: 'September 20, 2015',
+                        title: 'Entered Eternal Rest',
+                        description: 'A day of profound sadness, but also a moment when heaven gained a true angel.'
+                    },
+                    {
+                        id: 2,
+                        year: '2012',
+                        title: 'Becoming a Father',
+                        description: 'The happiest moment of his life was welcoming his children into the world. Being a dad was his greatest honor.'
+                    },
+                    {
+                        id: 3,
+                        year: '2008',
+                        title: 'Beginning Our Family Journey',
+                        description: 'Filled with big dreams, endless laughter, and boundless love for the future.'
+                    }
+                ],
+
+                guestbookEntries: [
+                    {
+                        id: 1,
+                        name: 'Aunt Eleanor',
+                        relation: 'Family Friend',
+                        message: 'Your dad was one of the kindest souls I ever knew. Kids, always remember how much he adored you!',
+                        date: 'September 2015'
+                    }
+                ],
+
+                newMedia: { type: 'image', url: '', title: '', caption: '' },
+                newTimeline: { year: '', title: '', description: '' },
+                newGuestbook: { name: '', relation: '', message: '' },
+
+                initApp() {
+                    // Load saved state from LocalStorage if available
+                    const savedState = localStorage.getItem('memorial_kids_daddy_data');
+                    if (savedState) {
+                        try {
+                            const parsed = JSON.parse(savedState);
+                            if (parsed.memorialData) this.memorialData = parsed.memorialData;
+                            if (parsed.mediaItems) this.mediaItems = parsed.mediaItems;
+                            if (parsed.timelineItems) this.timelineItems = parsed.timelineItems;
+                            if (parsed.guestbookEntries) this.guestbookEntries = parsed.guestbookEntries;
+                            if (parsed.candlesLit) this.candlesLit = parsed.candlesLit;
+                        } catch(e) { console.error('Error loading saved state', e); }
+                    }
+
+                    this.initAmbientCanvas();
+                    this.$watch('memorialData', () => this.saveToStorage(), { deep: true });
+                    this.$watch('mediaItems', () => this.saveToStorage(), { deep: true });
+                    this.$watch('timelineItems', () => this.saveToStorage(), { deep: true });
+                    this.$watch('guestbookEntries', () => this.saveToStorage(), { deep: true });
+                    this.$watch('candlesLit', () => this.saveToStorage());
+
+                    // Re-run lucide icons rendering
+                    this.$nextTick(() => { lucide.createIcons(); });
+                },
+
+                saveToStorage() {
+                    const dataToSave = {
+                        memorialData: this.memorialData,
+                        mediaItems: this.mediaItems,
+                        timelineItems: this.timelineItems,
+                        guestbookEntries: this.guestbookEntries,
+                        candlesLit: this.candlesLit
+                    };
+                    localStorage.setItem('memorial_kids_daddy_data', JSON.stringify(dataToSave));
+                },
+
+                calculateDaysPassed() {
+                    const passDate = new Date('2015-09-20');
+                    const today = new Date();
+                    const diffTime = Math.abs(today - passDate);
+                    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                },
+
+                lightCandle() {
+                    this.candlesLit++;
+                },
+
+                get filteredMedia() {
+                    if (this.mediaFilter === 'all') return this.mediaItems;
+                    return this.mediaItems.filter(item => item.type === this.mediaFilter);
+                },
+
+                handleFileUpload(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.newMedia.url = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                },
+
+                addMediaItem() {
+                    if (!this.newMedia.url) {
+                        alert('Please provide an image file or video link.');
+                        return;
+                    }
+                    this.mediaItems.unshift({
+                        id: Date.now(),
+                        type: this.newMedia.type,
+                        url: this.newMedia.url,
+                        title: this.newMedia.title || 'Special Memory',
+                        caption: this.newMedia.caption || '',
+                        date: new Date().toISOString().split('T')[0]
+                    });
+                    this.newMedia = { type: 'image', url: '', title: '', caption: '' };
+                    this.openMediaModal = false;
+                    this.$nextTick(() => { lucide.createIcons(); });
+                },
+
+                deleteMedia(id) {
+                    this.mediaItems = this.mediaItems.filter(m => m.id !== id);
+                },
+
+                addTimelineItem() {
+                    if (!this.newTimeline.title || !this.newTimeline.year) return;
+                    this.timelineItems.unshift({
+                        id: Date.now(),
+                        year: this.newTimeline.year,
+                        title: this.newTimeline.title,
+                        description: this.newTimeline.description
+                    });
+                    this.newTimeline = { year: '', title: '', description: '' };
+                    this.openTimelineModal = false;
+                    this.$nextTick(() => { lucide.createIcons(); });
+                },
+
+                deleteTimelineItem(id) {
+                    this.timelineItems = this.timelineItems.filter(t => t.id !== id);
+                },
+
+                addGuestbookEntry() {
+                    if (!this.newGuestbook.name || !this.newGuestbook.message) return;
+                    this.guestbookEntries.unshift({
+                        id: Date.now(),
+                        name: this.newGuestbook.name,
+                        relation: this.newGuestbook.relation || 'Family Friend',
+                        message: this.newGuestbook.message,
+                        date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                    });
+                    this.newGuestbook = { name: '', relation: '', message: '' };
+                    this.openGuestbookModal = false;
+                    this.$nextTick(() => { lucide.createIcons(); });
+                },
+
+                deleteGuestbookEntry(id) {
+                    this.guestbookEntries = this.guestbookEntries.filter(g => g.id !== id);
+                },
+
+                saveHeaderDetails() {
+                    this.openEditHeader = false;
+                },
+
+                viewMedia(item) {
+                    this.activeLightbox = item;
+                    this.$nextTick(() => { lucide.createIcons(); });
+                },
+
+                getVideoThumbnail(url) {
+                    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+                    if (match && match[1]) {
+                        return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
+                    }
+                    return 'https://images.unsplash.com/photo-1518173946687-a4c8a383392e?auto=format&fit=crop&q=80&w=800';
+                },
+
+                getEmbedVideoUrl(url) {
+                    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+                    if (match && match[1]) {
+                        return `https://www.youtube.com/embed/${match[1]}?autoplay=1`;
+                    }
+                    return url;
+                },
+
+                exportData() {
+                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem('memorial_kids_daddy_data'));
+                    const downloadAnchor = document.createElement('a');
+                    downloadAnchor.setAttribute("href", dataStr);
+                    downloadAnchor.setAttribute("download", `memorial_backup_daddy_${new Date().toISOString().split('T')[0]}.json`);
+                    document.body.appendChild(downloadAnchor);
+                    downloadAnchor.click();
+                    downloadAnchor.remove();
+                },
+
+                importData(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const parsed = JSON.parse(e.target.result);
+                            if (parsed.memorialData) this.memorialData = parsed.memorialData;
+                            if (parsed.mediaItems) this.mediaItems = parsed.mediaItems;
+                            if (parsed.timelineItems) this.timelineItems = parsed.timelineItems;
+                            if (parsed.guestbookEntries) this.guestbookEntries = parsed.guestbookEntries;
+                            if (parsed.candlesLit) this.candlesLit = parsed.candlesLit;
+                            this.saveToStorage();
+                            alert('Memorial data restored successfully!');
+                        } catch (err) {
+                            alert('Invalid backup file format.');
+                        }
+                    };
+                    reader.readAsText(file);
+                },
+
+                initAmbientCanvas() {
+                    const canvas = document.getElementById('ambientCanvas');
+                    if (!canvas) return;
+                    const ctx = canvas.getContext('2d');
+                    let width = canvas.width = window.innerWidth;
+                    let height = canvas.height = window.innerHeight;
+
+                    window.addEventListener('resize', () => {
+                        width = canvas.width = window.innerWidth;
+                        height = canvas.height = window.innerHeight;
+                    });
+
+                    const stars = Array.from({ length: 45 }, () => ({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        radius: Math.random() * 1.8 + 0.5,
+                        alpha: Math.random() * 0.6 + 0.2,
+                        speed: Math.random() * 0.3 + 0.1
+                    }));
+
+                    function animate() {
+                        ctx.clearRect(0, 0, width, height);
+                        stars.forEach(star => {
+                            star.y -= star.speed;
+                            if (star.y < 0) star.y = height;
+                            ctx.beginPath();
+                            ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                            ctx.fillStyle = `rgba(215, 196, 165, ${star.alpha})`;
+                            ctx.fill();
+                        });
+                        requestAnimationFrame(animate);
+                    }
+                    animate();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
