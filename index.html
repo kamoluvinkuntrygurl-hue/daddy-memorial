@@ -36,9 +36,9 @@
         <span class="font-serif-display text-xl font-bold tracking-wide text-amber-100" x-text="profile.name"></span>
       </div>
       <div class="flex items-center gap-2.5">
-        <button @click="showUploadModal = true" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition shadow-lg shadow-amber-500/20">
+        <button @click="showUploadModal = true" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-4 py-2 rounded-lg text-xs sm:text-sm flex items-center gap-2 transition shadow-lg shadow-amber-500/20">
           <i data-lucide="plus-circle" class="w-4 h-4"></i>
-          <span>Add Photo / Video</span>
+          <span>Add Photos & Videos</span>
         </button>
       </div>
     </div>
@@ -118,15 +118,14 @@
           </p>
         </div>
 
-        <!-- Action Buttons: Remove Duplicates + Add Media -->
         <div class="flex flex-wrap items-center gap-2.5">
           <button @click="removeDuplicates()" x-show="mediaItems.length > 1" class="bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-200 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
             <i data-lucide="copy-minus" class="w-4 h-4 text-rose-400"></i>
-            <span>Remove Duplicate Photos</span>
+            <span>Remove Duplicates</span>
           </button>
           <button @click="showUploadModal = true" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-200 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
             <i data-lucide="folder-plus" class="w-4 h-4 text-amber-400"></i>
-            <span>Upload Folder / Photos</span>
+            <span>Upload Folder / Videos</span>
           </button>
         </div>
       </div>
@@ -142,11 +141,11 @@
       </div>
 
       <!-- Empty State -->
-      <div x-show="filteredMedia.length === 0" class="text-center py-16 bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl">
+      <div x-show="filteredMedia.length === 0" class="text-center py-16 bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl px-4">
         <i data-lucide="images" class="w-12 h-12 text-slate-600 mx-auto mb-3"></i>
         <p class="text-slate-400 text-sm mb-4">No memories in this category yet.</p>
-        <button @click="showUploadModal = true" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-4 py-2 rounded-lg text-sm">
-          Upload Photos or Videos
+        <button @click="showUploadModal = true" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-5 py-2.5 rounded-lg text-sm">
+          Upload Folder of Photos & Videos
         </button>
       </div>
 
@@ -154,10 +153,21 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <template x-for="item in filteredMedia" :key="item.id">
           <div class="bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden flex flex-col group hover:border-amber-500/40 transition">
-            <!-- Media Thumbnail -->
+            <!-- Media Preview -->
             <div @click="activeLightbox = item" class="relative aspect-video bg-slate-950 cursor-pointer overflow-hidden">
               <template x-if="item.type === 'photo'">
                 <img :src="item.url" :alt="item.title" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" />
+              </template>
+              <template x-if="item.type === 'local-video'">
+                <div class="w-full h-full flex items-center justify-center bg-slate-900 relative">
+                  <video :src="item.url" class="w-full h-full object-cover opacity-85" muted preload="metadata"></video>
+                  <div class="absolute inset-0 flex items-center justify-center bg-black/25">
+                    <div class="w-12 h-12 rounded-full bg-amber-500/95 text-slate-950 flex items-center justify-center shadow-lg">
+                      <i data-lucide="play" class="w-5 h-5 fill-current ml-0.5"></i>
+                    </div>
+                  </div>
+                  <span class="absolute top-2 left-2 bg-slate-950/80 text-amber-300 text-[10px] font-semibold px-2 py-0.5 rounded">VIDEO</span>
+                </div>
               </template>
               <template x-if="item.type === 'video'">
                 <div class="w-full h-full flex items-center justify-center bg-slate-900 relative">
@@ -167,18 +177,19 @@
                       <i data-lucide="play" class="w-5 h-5 fill-current ml-0.5"></i>
                     </div>
                   </div>
+                  <span class="absolute top-2 left-2 bg-slate-950/80 text-amber-300 text-[10px] font-semibold px-2 py-0.5 rounded">YOUTUBE</span>
                 </div>
               </template>
             </div>
 
-            <!-- Card Details & Quick Category Selector -->
+            <!-- Card Title & Quick Category Selector -->
             <div class="p-4 flex-1 flex flex-col justify-between gap-3">
               <div>
                 <h3 class="font-semibold text-slate-100 text-sm line-clamp-1" x-text="item.title || 'Cherished Memory'"></h3>
                 <p x-show="item.caption" class="text-xs text-slate-400 mt-1 line-clamp-2" x-text="item.caption"></p>
               </div>
               <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
-                <select x-model="item.category" @change="saveToStorage()" class="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-lg px-2 py-1 focus:outline-none focus:border-amber-500">
+                <select x-model="item.category" @change="saveAllData()" class="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-lg px-2 py-1 focus:outline-none focus:border-amber-500">
                   <template x-for="cat in categories.filter(c => c !== 'All Memories')" :key="cat">
                     <option :value="cat" x-text="cat" :selected="item.category === cat"></option>
                   </template>
@@ -246,7 +257,7 @@
     <section class="bg-slate-900/80 border border-amber-500/20 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
       <div>
         <h3 class="font-bold text-amber-100 text-base">Keep Your Memorial Safe (Backup & Restore)</h3>
-        <p class="text-xs text-slate-400 mt-1">Download a backup copy of all your cleaned-up photos and stories anytime.</p>
+        <p class="text-xs text-slate-400 mt-1">Download a backup copy of all your photos, videos, and stories anytime.</p>
       </div>
       <div class="flex flex-wrap gap-3">
         <button @click="exportBackup()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-4 py-2 rounded-lg text-sm flex items-center gap-2">
@@ -269,6 +280,9 @@
       <template x-if="activeLightbox?.type === 'photo'">
         <img :src="activeLightbox?.url" class="max-h-[75vh] w-full object-contain bg-black" />
       </template>
+      <template x-if="activeLightbox?.type === 'local-video'">
+        <video :src="activeLightbox?.url" controls autoplay class="max-h-[75vh] w-full bg-black"></video>
+      </template>
       <template x-if="activeLightbox?.type === 'video'">
         <div class="aspect-video w-full">
           <iframe :src="activeLightbox?.embedUrl" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
@@ -285,44 +299,53 @@
   <div x-show="showUploadModal" x-cloak class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" @click.self="showUploadModal = false">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-5">
       <div class="flex items-center justify-between">
-        <h3 class="font-serif-display text-2xl font-bold text-white">Add Photos or Videos</h3>
+        <h3 class="font-serif-display text-2xl font-bold text-white">Add Photos & Videos</h3>
         <button @click="showUploadModal = false" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
       <div class="flex gap-2 border-b border-slate-800 pb-3">
-        <button @click="uploadMode = 'photo'" :class="uploadMode === 'photo' ? 'bg-amber-500 text-slate-950 font-semibold' : 'bg-slate-800 text-slate-300'" class="px-3.5 py-1.5 rounded-lg text-xs">Upload Photos / Folder</button>
-        <button @click="uploadMode = 'video'" :class="uploadMode === 'video' ? 'bg-amber-500 text-slate-950 font-semibold' : 'bg-slate-800 text-slate-300'" class="px-3.5 py-1.5 rounded-lg text-xs">YouTube Video Link</button>
+        <button @click="uploadMode = 'files'" :class="uploadMode === 'files' ? 'bg-amber-500 text-slate-950 font-semibold' : 'bg-slate-800 text-slate-300'" class="px-3.5 py-1.5 rounded-lg text-xs">Upload Photos / Videos / Folder</button>
+        <button @click="uploadMode = 'youtube'" :class="uploadMode === 'youtube' ? 'bg-amber-500 text-slate-950 font-semibold' : 'bg-slate-800 text-slate-300'" class="px-3.5 py-1.5 rounded-lg text-xs">YouTube Video Link</button>
       </div>
 
-      <!-- Photo / Folder Upload -->
-      <div x-show="uploadMode === 'photo'" class="space-y-4">
+      <!-- Direct Photo, Video & Folder Upload -->
+      <div x-show="uploadMode === 'files'" class="space-y-4">
         <div class="grid grid-cols-2 gap-3">
           <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-700 hover:border-amber-500 rounded-xl p-4 cursor-pointer text-center transition">
-            <i data-lucide="images" class="w-6 h-6 text-amber-400 mb-1.5"></i>
-            <span class="text-xs font-semibold text-slate-200">Select Photos</span>
-            <input type="file" accept="image/*" multiple @change="handleFileSelect($event)" class="hidden" />
+            <i data-lucide="film" class="w-6 h-6 text-amber-400 mb-1.5"></i>
+            <span class="text-xs font-semibold text-slate-200">Select Photos or Videos</span>
+            <span class="text-[10px] text-slate-400 mt-0.5">JPG, PNG, MP4, MOV</span>
+            <input type="file" accept="image/*,video/*" multiple @change="handleFileSelect($event)" class="hidden" />
           </label>
           <label class="flex flex-col items-center justify-center border-2 border-dashed border-amber-500/40 hover:border-amber-500 bg-amber-500/5 rounded-xl p-4 cursor-pointer text-center transition">
             <i data-lucide="folder-up" class="w-6 h-6 text-amber-400 mb-1.5"></i>
             <span class="text-xs font-semibold text-amber-200">Upload Whole Folder</span>
+            <span class="text-[10px] text-slate-400 mt-0.5">Grabs all photos & videos</span>
             <input type="file" webkitdirectory directory multiple @change="handleFileSelect($event)" class="hidden" />
           </label>
         </div>
 
-        <label class="flex items-center gap-2 text-xs text-slate-300">
-          <input type="checkbox" x-model="skipDuplicatesOnUpload" class="rounded text-amber-500 focus:ring-0" />
-          <span>Automatically skip duplicate pictures</span>
-        </label>
+        <div class="space-y-2">
+          <label class="flex items-center gap-2 text-xs text-slate-300">
+            <input type="checkbox" x-model="skipDuplicatesOnUpload" class="rounded text-amber-500 focus:ring-0" />
+            <span>Automatically skip duplicate photos & videos</span>
+          </label>
+          <label class="flex items-center gap-2 text-xs text-slate-300">
+            <input type="checkbox" x-model="autoSortOnUpload" class="rounded text-amber-500 focus:ring-0" />
+            <span>✨ Smart Auto-Sort into albums & clean up titles</span>
+          </label>
+        </div>
 
-        <p x-show="pendingPhotos.length > 0" class="text-xs text-amber-300 font-medium" x-text="`✅ ${pendingPhotos.length} unique photo(s) ready to add!`"></p>
+        <p x-show="isProcessing" class="text-xs text-amber-400 animate-pulse">Scanning files, removing duplicates, and sorting...</p>
+        <p x-show="!isProcessing && pendingItems.length > 0" class="text-xs text-emerald-300 font-medium" x-text="`✅ ${pendingItems.length} unique item(s) sorted & ready to add!`"></p>
 
-        <button @click="savePendingPhotos()" :disabled="pendingPhotos.length === 0" class="w-full bg-amber-500 disabled:opacity-40 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-lg text-sm transition">
+        <button @click="savePendingItems()" :disabled="pendingItems.length === 0 || isProcessing" class="w-full bg-amber-500 disabled:opacity-40 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-lg text-sm transition">
           Add to Media Vault
         </button>
       </div>
 
       <!-- YouTube Video Link -->
-      <div x-show="uploadMode === 'video'" class="space-y-3">
+      <div x-show="uploadMode === 'youtube'" class="space-y-3">
         <input x-model="videoForm.title" type="text" placeholder="Video Title" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2 text-sm text-white" />
         <input x-model="videoForm.url" type="url" placeholder="Paste YouTube Link (e.g., https://youtube.com/watch?v=...)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2 text-sm text-white" />
         <select x-model="videoForm.category" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2 text-sm text-slate-200">
@@ -330,7 +353,7 @@
             <option :value="cat" x-text="cat"></option>
           </template>
         </select>
-        <button @click="addVideo()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-lg text-sm">Save Video</button>
+        <button @click="addYoutubeVideo()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-lg text-sm">Save Video</button>
       </div>
     </div>
   </div>
@@ -378,6 +401,37 @@
   </div>
 
   <script>
+    const idbStorage = {
+      dbName: 'DaddyMemorialHighCapDB',
+      storeName: 'memorialState',
+      open() {
+        return new Promise((resolve, reject) => {
+          const req = indexedDB.open(this.dbName, 1);
+          req.onupgradeneeded = () => req.result.createObjectStore(this.storeName);
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+      },
+      async get(key) {
+        const db = await this.open();
+        return new Promise((resolve) => {
+          const tx = db.transaction(this.storeName, 'readonly');
+          const req = tx.objectStore(this.storeName).get(key);
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => resolve(null);
+        });
+      },
+      async set(key, val) {
+        const db = await this.open();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(this.storeName, 'readwrite');
+          tx.objectStore(this.storeName).put(val, key);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+      }
+    };
+
     function memorialApp() {
       return {
         toastMessage: '',
@@ -385,10 +439,12 @@
         showProfileModal: false,
         showMilestoneModal: false,
         activeLightbox: null,
-        uploadMode: 'photo',
+        uploadMode: 'files',
         skipDuplicatesOnUpload: true,
+        autoSortOnUpload: true,
+        isProcessing: false,
         selectedCategory: 'All Memories',
-        categories: ['All Memories', 'Daddy & Kids', 'Mom & Daddy', 'Family Together', 'Growing Up', 'Uncategorized'],
+        categories: ['All Memories', 'Daddy & Kids', 'Mom & Daddy', 'Family Together', 'Growing Up', 'Videos', 'Uncategorized'],
         candles: 1,
         daysPassedText: '',
         profile: {
@@ -400,47 +456,46 @@
         },
         editProfileForm: {},
         mediaItems: [],
-        pendingPhotos: [],
-        videoForm: { title: '', url: '', category: 'Family Together' },
+        pendingItems: [],
+        videoForm: { title: '', url: '', category: 'Videos' },
         milestones: [],
         newMilestone: { date: '', title: '', description: '' },
         tributes: [],
         newTribute: { author: '', message: '' },
 
-        initApp() {
-          const saved = localStorage.getItem('daddy_memorial_data_v1');
-          if (saved) {
-            try {
-              const parsed = JSON.parse(saved);
-              if (parsed.profile) this.profile = parsed.profile;
-              if (parsed.mediaItems) this.mediaItems = parsed.mediaItems;
-              if (parsed.milestones) this.milestones = parsed.milestones;
-              if (parsed.tributes) this.tributes = parsed.tributes;
-              if (parsed.candles) this.candles = parsed.candles;
-            } catch (e) { console.error(e); }
+        async initApp() {
+          const idbData = await idbStorage.get('mainState');
+          if (idbData) {
+            this.applyState(idbData);
           }
           this.calculateDaysPassed();
           this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
         },
 
-        saveToStorage() {
-          try {
-            localStorage.setItem('daddy_memorial_data_v1', JSON.stringify({
-              profile: this.profile,
-              mediaItems: this.mediaItems,
-              milestones: this.milestones,
-              tributes: this.tributes,
-              candles: this.candles
-            }));
-          } catch (e) {
-            this.notify('Storage full! Try removing duplicates and exporting a backup.');
-          }
+        applyState(parsed) {
+          if (!parsed) return;
+          if (parsed.profile) this.profile = { ...this.profile, ...parsed.profile };
+          if (Array.isArray(parsed.mediaItems)) this.mediaItems = parsed.mediaItems;
+          if (Array.isArray(parsed.milestones)) this.milestones = parsed.milestones;
+          if (Array.isArray(parsed.tributes)) this.tributes = parsed.tributes;
+          if (parsed.candles) this.candles = parsed.candles;
+        },
+
+        async saveAllData() {
+          const payload = {
+            profile: JSON.parse(JSON.stringify(this.profile)),
+            mediaItems: JSON.parse(JSON.stringify(this.mediaItems)),
+            milestones: JSON.parse(JSON.stringify(this.milestones)),
+            tributes: JSON.parse(JSON.stringify(this.tributes)),
+            candles: this.candles
+          };
+          await idbStorage.set('mainState', payload);
           this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
         },
 
         notify(msg) {
           this.toastMessage = msg;
-          setTimeout(() => { this.toastMessage = ''; }, 4500);
+          setTimeout(() => { this.toastMessage = ''; }, 5000);
         },
 
         calculateDaysPassed() {
@@ -456,7 +511,7 @@
 
         lightCandle() {
           this.candles++;
-          this.saveToStorage();
+          this.saveAllData();
           this.notify('A candle has been lit in his memory.');
         },
 
@@ -474,7 +529,7 @@
         saveProfile() {
           this.profile = { ...this.editProfileForm };
           this.showProfileModal = false;
-          this.saveToStorage();
+          this.saveAllData();
           this.notify('Memorial details updated!');
         },
 
@@ -497,7 +552,14 @@
           });
         },
 
-        // Creates a fast visual fingerprint from image pixels to catch duplicate photos even if renamed
+        readFileAsDataUrl(file) {
+          return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(file);
+          });
+        },
+
         getVisualFingerprint(dataUrl) {
           return new Promise((resolve) => {
             const img = new Image();
@@ -515,14 +577,39 @@
               }
               resolve(hash);
             };
-            img.onerror = () => resolve(dataUrl.slice(-64));
+            img.onerror = () => resolve(dataUrl.slice(0, 80) + '_' + dataUrl.length);
             img.src = dataUrl;
           });
         },
 
+        smartCategorize(file, isVideo) {
+          const pathText = ((file.webkitRelativePath || '') + ' ' + file.name).toLowerCase();
+          const cleanTitle = file.name
+            .replace(/\.[^/.]+$/, '')
+            .replace(/^(img|dsc|vid|mov|pxl|screenshot)[_-]*/i, '')
+            .replace(/[_-]+/g, ' ')
+            .trim() || (isVideo ? 'Daddy Family Video' : 'Cherished Memory');
+
+          if (!this.autoSortOnUpload) {
+            return { title: cleanTitle, category: isVideo ? 'Videos' : 'Uncategorized' };
+          }
+
+          let category = isVideo ? 'Videos' : 'Uncategorized';
+          if (/(baby|kid|child|young|little|school|boyhood|growing|teen)/i.test(pathText)) {
+            category = 'Growing Up';
+          } else if (/(harlee|jordan|jacob|hunter|boys|son|kids|dad.*kid|daddy.*kid)/i.test(pathText)) {
+            category = 'Daddy & Kids';
+          } else if (/(cassie|mom|wife|wedding|couple|us|love|anniversary)/i.test(pathText)) {
+            category = 'Mom & Daddy';
+          } else if (/(family|holiday|christmas|birthday|vacation|trip|park|together)/i.test(pathText)) {
+            category = 'Family Together';
+          }
+          return { title: cleanTitle, category };
+        },
+
         async removeDuplicates() {
           if (this.mediaItems.length < 2) {
-            this.notify('No duplicate photos found.');
+            this.notify('No duplicates found.');
             return;
           }
           const seen = new Set();
@@ -530,74 +617,106 @@
           let removedCount = 0;
 
           for (const item of this.mediaItems) {
-            if (item.type !== 'photo') {
-              uniqueItems.push(item);
-              continue;
+            let fp = '';
+            if (item.type === 'photo') {
+              fp = await this.getVisualFingerprint(item.url);
+            } else if (item.type === 'local-video') {
+              fp = 'vid_' + item.url.length + '_' + item.url.slice(-120);
+            } else {
+              fp = item.embedUrl;
             }
-            const fingerprint = await this.getVisualFingerprint(item.url);
-            if (seen.has(fingerprint)) {
+
+            if (seen.has(fp)) {
               removedCount++;
             } else {
-              seen.add(fingerprint);
+              seen.add(fp);
               uniqueItems.push(item);
             }
           }
 
+          this.mediaItems = uniqueItems;
+          await this.saveAllData();
           if (removedCount > 0) {
-            this.mediaItems = uniqueItems;
-            this.saveToStorage();
-            this.notify(`Removed ${removedCount} duplicate photo(s)! ${uniqueItems.length} unique memories kept.`);
+            this.notify(`Removed ${removedCount} duplicate(s)! ${uniqueItems.length} unique memories kept.`);
           } else {
-            this.notify('All photos are already unique — 0 duplicates found!');
+            this.notify('All photos & videos are already unique!');
           }
         },
 
         async handleFileSelect(e) {
-          const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
-          if (!files.length) return;
-          this.notify(`Processing ${files.length} photo(s)...`);
+          const allFiles = Array.from(e.target.files).filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'));
+          if (!allFiles.length) return;
+
+          this.isProcessing = true;
+          this.pendingItems = [];
 
           const existingHashes = new Set();
           if (this.skipDuplicatesOnUpload) {
             for (const item of this.mediaItems) {
               if (item.type === 'photo') {
                 existingHashes.add(await this.getVisualFingerprint(item.url));
+              } else if (item.type === 'local-video') {
+                existingHashes.add('vid_' + item.url.length + '_' + item.url.slice(-120));
               }
             }
           }
 
           let skipped = 0;
           const batch = [];
-          for (const file of files) {
-            const compressed = await this.compressImage(file);
-            if (this.skipDuplicatesOnUpload) {
-              const fp = await this.getVisualFingerprint(compressed);
-              if (existingHashes.has(fp)) { skipped++; continue; }
+
+          for (const file of allFiles) {
+            const isVideo = file.type.startsWith('video/');
+            if (isVideo) {
+              const videoDataUrl = await this.readFileAsDataUrl(file);
+              const fp = 'vid_' + videoDataUrl.length + '_' + videoDataUrl.slice(-120);
+              if (this.skipDuplicatesOnUpload && existingHashes.has(fp)) {
+                skipped++;
+                continue;
+              }
               existingHashes.add(fp);
+              const meta = this.smartCategorize(file, true);
+              batch.push({
+                id: Date.now() + Math.random(),
+                type: 'local-video',
+                url: videoDataUrl,
+                title: meta.title,
+                caption: '',
+                category: meta.category
+              });
+            } else {
+              const compressed = await this.compressImage(file);
+              const fp = await this.getVisualFingerprint(compressed);
+              if (this.skipDuplicatesOnUpload && existingHashes.has(fp)) {
+                skipped++;
+                continue;
+              }
+              existingHashes.add(fp);
+              const meta = this.smartCategorize(file, false);
+              batch.push({
+                id: Date.now() + Math.random(),
+                type: 'photo',
+                url: compressed,
+                title: meta.title,
+                caption: '',
+                category: meta.category
+              });
             }
-            const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' ');
-            batch.push({
-              id: Date.now() + Math.random(),
-              type: 'photo',
-              url: compressed,
-              title: cleanName,
-              caption: '',
-              category: 'Uncategorized'
-            });
           }
-          this.pendingPhotos = batch;
-          this.notify(skipped > 0 ? `Ready: ${batch.length} unique photo(s) (${skipped} duplicates skipped).` : `${batch.length} photo(s) ready!`);
+
+          this.pendingItems = batch;
+          this.isProcessing = false;
+          this.notify(skipped > 0 ? `Ready: ${batch.length} unique item(s) (${skipped} duplicates skipped).` : `${batch.length} item(s) ready!`);
         },
 
-        savePendingPhotos() {
-          this.mediaItems = [...this.pendingPhotos, ...this.mediaItems];
-          this.pendingPhotos = [];
+        async savePendingItems() {
+          this.mediaItems = [...this.pendingItems, ...this.mediaItems];
+          this.pendingItems = [];
           this.showUploadModal = false;
-          this.saveToStorage();
-          this.notify('Photos added to the memorial!');
+          await this.saveAllData();
+          this.notify('Photos & videos saved to your memorial!');
         },
 
-        addVideo() {
+        async addYoutubeVideo() {
           const match = this.videoForm.url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
           if (!match) { this.notify('Please paste a valid YouTube video link.'); return; }
           const vid = match[1];
@@ -610,31 +729,31 @@
             caption: '',
             category: this.videoForm.category
           });
-          this.videoForm = { title: '', url: '', category: 'Family Together' };
+          this.videoForm = { title: '', url: '', category: 'Videos' };
           this.showUploadModal = false;
-          this.saveToStorage();
-          this.notify('Video added!');
+          await this.saveAllData();
+          this.notify('YouTube video added!');
         },
 
-        deleteMedia(id) {
+        async deleteMedia(id) {
           this.mediaItems = this.mediaItems.filter(m => m.id !== id);
-          this.saveToStorage();
+          await this.saveAllData();
         },
 
-        addMilestone() {
+        async addMilestone() {
           if (!this.newMilestone.title) return;
           this.milestones.push({ id: Date.now(), ...this.newMilestone });
           this.newMilestone = { date: '', title: '', description: '' };
           this.showMilestoneModal = false;
-          this.saveToStorage();
+          await this.saveAllData();
         },
 
-        deleteMilestone(id) {
+        async deleteMilestone(id) {
           this.milestones = this.milestones.filter(m => m.id !== id);
-          this.saveToStorage();
+          await this.saveAllData();
         },
 
-        addTribute() {
+        async addTribute() {
           if (!this.newTribute.author || !this.newTribute.message) return;
           this.tributes.unshift({
             id: Date.now(),
@@ -643,12 +762,12 @@
             date: new Date().toLocaleDateString()
           });
           this.newTribute = { author: '', message: '' };
-          this.saveToStorage();
+          await this.saveAllData();
         },
 
-        deleteTribute(id) {
+        async deleteTribute(id) {
           this.tributes = this.tributes.filter(t => t.id !== id);
-          this.saveToStorage();
+          await this.saveAllData();
         },
 
         exportBackup() {
@@ -665,15 +784,11 @@
           const file = e.target.files[0];
           if (!file) return;
           const reader = new FileReader();
-          reader.onload = (ev) => {
+          reader.onload = async (ev) => {
             try {
               const parsed = JSON.parse(ev.target.result);
-              if (parsed.profile) this.profile = parsed.profile;
-              if (parsed.mediaItems) this.mediaItems = parsed.mediaItems;
-              if (parsed.milestones) this.milestones = parsed.milestones;
-              if (parsed.tributes) this.tributes = parsed.tributes;
-              if (parsed.candles) this.candles = parsed.candles;
-              this.saveToStorage();
+              this.applyState(parsed);
+              await this.saveAllData();
               this.notify('Backup restored!');
             } catch (err) { this.notify('Invalid backup file.'); }
           };
