@@ -308,9 +308,13 @@
 
                     <div class="flex flex-wrap items-center gap-3">
                         <!-- Filter Tabs -->
-                        <div class="bg-stone-100 p-1 rounded-xl flex space-x-1 text-xs font-medium text-stone-600">
+                        <div class="bg-stone-100 p-1 rounded-xl flex flex-wrap gap-1 text-xs font-medium text-stone-600">
                             <button @click="mediaFilter = 'all'" :class="{'bg-white text-stone-900 shadow-sm': mediaFilter === 'all'}" class="px-3 py-1.5 rounded-lg transition">All</button>
-                            <button @click="mediaFilter = 'image'" :class="{'bg-white text-stone-900 shadow-sm': mediaFilter === 'image'}" class="px-3 py-1.5 rounded-lg transition">Photos</button>
+                            <button @click="mediaFilter = 'Daddy & Kids'" :class="{'bg-white text-stone-900 shadow-sm': mediaFilter === 'Daddy & Kids'}" class="px-3 py-1.5 rounded-lg transition">Daddy & Kids</button>
+                            <button @click="mediaFilter = 'Mom & Daddy'" :class="{'bg-white text-stone-900 shadow-sm': mediaFilter === 'Mom & Daddy'}" class="px-3 py-1.5 rounded-lg transition">Mom & Daddy</button>
+                            <button @click="mediaFilter = 'Family Together'" :class="{'bg-white text-stone-900 shadow-sm': mediaFilter === 'Family Together'}" class="px-3 py-1.5 rounded-lg transition">Family Together</button>
+                            <button @click="mediaFilter = 'Growing Up'" :class="{'bg-white text-stone-900 shadow-sm': mediaFilter === 'Growing Up'}" class="px-3 py-1.5 rounded-lg transition">Growing Up</button>
+                            <button @click="mediaFilter = 'Uncategorized'" :class="{'bg-white text-stone-900 shadow-sm': mediaFilter === 'Uncategorized'}" class="px-3 py-1.5 rounded-lg transition">Uncategorized</button>
                             <button @click="mediaFilter = 'video'" :class="{'bg-white text-stone-900 shadow-sm': mediaFilter === 'video'}" class="px-3 py-1.5 rounded-lg transition">Videos</button>
                         </div>
 
@@ -352,11 +356,23 @@
                                     <h4 class="font-heading font-semibold text-stone-900 text-sm line-clamp-1" x-text="item.title || 'Untitled Memory'"></h4>
                                     <p class="text-stone-500 text-xs line-clamp-2 mt-1" x-text="item.caption || 'No description added'"></p>
                                 </div>
-                                <div class="flex items-center justify-between pt-2 border-t border-stone-100 text-[11px] text-stone-400">
-                                    <span x-text="item.date"></span>
-                                    <button @click="deleteMedia(item.id)" class="text-stone-400 hover:text-red-500 p-1" title="Delete media">
-                                        <i data-lucide="trash" class="w-3.5 h-3.5"></i>
-                                    </button>
+                                <div class="pt-2 border-t border-stone-100 space-y-2">
+                                    <!-- Quick Category Selector right on the card -->
+                                    <template x-if="item.type === 'image'">
+                                        <select x-model="item.category" @change="saveToStorage()" class="w-full text-[11px] bg-stone-50 border border-stone-200 rounded-lg px-2 py-1 text-stone-600 focus:ring-1 focus:ring-memorial-500 outline-none">
+                                            <option value="Uncategorized">📁 Uncategorized (Sort Later)</option>
+                                            <option value="Daddy & Kids">👨‍👧‍👦 Daddy & Kids</option>
+                                            <option value="Mom & Daddy">💑 Mom & Daddy</option>
+                                            <option value="Family Together">🏡 Family Together</option>
+                                            <option value="Growing Up">🧸 Growing Up (Childhood)</option>
+                                        </select>
+                                    </template>
+                                    <div class="flex items-center justify-between text-[11px] text-stone-400">
+                                        <span x-text="item.date"></span>
+                                        <button @click="deleteMedia(item.id)" class="text-stone-400 hover:text-red-500 p-1" title="Delete media">
+                                            <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -541,10 +557,45 @@
 
                 <template x-if="newMedia.type === 'image'">
                     <div class="space-y-3">
-                        <div>
-                            <label class="block font-medium text-stone-700 mb-1">Upload Photo File(s)</label>
-                            <input type="file" accept="image/*" multiple @change="handleFileUpload($event)" class="w-full text-xs text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-memorial-100 file:text-memorial-700 hover:file:bg-memorial-200 cursor-pointer">
-                            <p class="text-[11px] text-stone-400 mt-1" x-text="selectedFiles.length > 0 ? selectedFiles.length + ' photo(s) selected' : 'Hold Ctrl or Shift to select multiple photos at once'"></p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <!-- Select Multiple Files -->
+                            <label class="flex flex-col items-center justify-center p-3 border-2 border-dashed border-memorial-300 rounded-xl bg-memorial-50/50 hover:bg-memorial-100/60 cursor-pointer text-center transition">
+                                <i data-lucide="images" class="w-5 h-5 text-memorial-600 mb-1"></i>
+                                <span class="text-xs font-semibold text-stone-800">Select Photos</span>
+                                <span class="text-[10px] text-stone-500">Pick one or many</span>
+                                <input type="file" accept="image/*" multiple @change="handleFileUpload($event)" class="hidden">
+                            </label>
+
+                            <!-- Select Whole Folder -->
+                            <label class="flex flex-col items-center justify-center p-3 border-2 border-dashed border-memorial-300 rounded-xl bg-memorial-50/50 hover:bg-memorial-100/60 cursor-pointer text-center transition">
+                                <i data-lucide="folder-up" class="w-5 h-5 text-memorial-600 mb-1"></i>
+                                <span class="text-xs font-semibold text-stone-800">Upload Whole Folder</span>
+                                <span class="text-[10px] text-stone-500">All subfolders included</span>
+                                <input type="file" webkitdirectory directory multiple @change="handleFileUpload($event)" class="hidden">
+                            </label>
+                        </div>
+
+                        <p class="text-xs text-center font-medium text-memorial-700" x-show="isProcessingFiles" x-text="processingStatus"></p>
+                        <p class="text-xs text-center font-medium text-emerald-700" x-show="!isProcessingFiles && selectedFiles.length > 0" x-text="'✅ ' + selectedFiles.length + ' photo(s) sorted & ready to add!'"></p>
+
+                        <!-- Smart Auto-Sort Toggle -->
+                        <div class="bg-amber-50/80 border border-amber-200/80 rounded-xl p-3 flex items-start space-x-3">
+                            <input type="checkbox" id="autoSortCheck" x-model="autoSortEnabled" class="mt-1 rounded text-memorial-600 focus:ring-memorial-500">
+                            <label for="autoSortCheck" class="text-xs text-stone-700 cursor-pointer">
+                                <span class="font-bold text-stone-900 block">✨ Smart Auto-Sort & Auto-Title</span>
+                                Automatically looks at each photo to sort it into <em>Daddy & Kids</em>, <em>Mom & Daddy</em>, <em>Family Together</em>, or <em>Growing Up</em>, and writes a title like "Daddy at the park".
+                            </label>
+                        </div>
+
+                        <div x-show="!autoSortEnabled">
+                            <label class="block font-medium text-stone-700 mb-1">Album Category (Manual)</label>
+                            <select x-model="newMedia.category" class="w-full px-3 py-2 border border-stone-300 rounded-xl focus:ring-2 focus:ring-memorial-500 outline-none bg-white">
+                                <option value="Uncategorized">Uncategorized (Sort later)</option>
+                                <option value="Daddy & Kids">Daddy & Kids</option>
+                                <option value="Mom & Daddy">Mom & Daddy</option>
+                                <option value="Family Together">Family Together</option>
+                                <option value="Growing Up">Growing Up (His Childhood)</option>
+                            </select>
                         </div>
                     </div>
                 </template>
@@ -657,6 +708,12 @@
         </div>
     </div>
 
+    <!-- Notification Toast Banner -->
+    <div x-show="toastMessage" x-cloak x-transition class="fixed bottom-5 right-5 z-50 bg-stone-900 text-white px-5 py-3 rounded-xl shadow-2xl border border-memorial-500 flex items-center space-x-3 text-sm">
+        <i data-lucide="check-circle" class="w-5 h-5 text-amber-300"></i>
+        <span x-text="toastMessage"></span>
+    </div>
+
     <!-- JavaScript Application Logic -->
     <script>
         function memorialApp() {
@@ -668,6 +725,7 @@
                 openGuestbookModal: false,
                 activeLightbox: null,
                 mediaFilter: 'all',
+                toastMessage: '',
 
                 candlesLit: 142,
 
@@ -686,6 +744,7 @@
                     {
                         id: 1,
                         type: 'image',
+                        category: 'Daddy & Kids',
                         url: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&q=80&w=800',
                         title: 'A Beautiful Day in the Park',
                         caption: 'Daddy loving nature and spending precious quiet moments outdoors.',
@@ -694,6 +753,7 @@
                     {
                         id: 2,
                         type: 'image',
+                        category: 'Family Together',
                         url: 'https://images.unsplash.com/photo-1476703993599-0035a21b17a9?auto=format&fit=crop&q=80&w=800',
                         title: 'Family Sunset Walk',
                         caption: 'Holding hands and walking into the sunset.',
@@ -702,6 +762,7 @@
                     {
                         id: 3,
                         type: 'video',
+                        category: 'video',
                         url: 'https://www.youtube.com/watch?v=gXFAVyu2ykg',
                         title: 'A Song of Remembrance',
                         caption: 'A comforting musical tribute dedicated in loving memory.',
@@ -741,77 +802,205 @@
                 ],
 
                 selectedFiles: [],
-                newMedia: { type: 'image', url: '', title: '', caption: '' },
+                isProcessingFiles: false,
+                processingStatus: '',
+                autoSortEnabled: true,
+                newMedia: { type: 'image', category: 'Uncategorized', url: '', title: '', caption: '' },
                 newTimeline: { year: '', title: '', description: '' },
                 newGuestbook: { name: '', relation: '', message: '' },
 
                 initApp() {
-                    // Load saved state from LocalStorage if available
-                    const savedState = localStorage.getItem('memorial_kids_daddy_data');
-                    if (savedState) {
+                    const saved = localStorage.getItem('memorial_kids_daddy_data');
+                    if (saved) {
                         try {
-                            const parsed = JSON.parse(savedState);
-                            if (parsed.memorialData) this.memorialData = parsed.memorialData;
+                            const parsed = JSON.parse(saved);
+                            if (parsed.memorialData) this.memorialData = { ...this.memorialData, ...parsed.memorialData };
                             if (parsed.mediaItems) this.mediaItems = parsed.mediaItems;
                             if (parsed.timelineItems) this.timelineItems = parsed.timelineItems;
                             if (parsed.guestbookEntries) this.guestbookEntries = parsed.guestbookEntries;
-                            if (parsed.candlesLit) this.candlesLit = parsed.candlesLit;
-                        } catch(e) { console.error('Error loading saved state', e); }
+                            if (typeof parsed.candlesLit === 'number') this.candlesLit = parsed.candlesLit;
+                        } catch (e) {
+                            console.error('Error loading saved data:', e);
+                        }
                     }
-
                     this.initAmbientCanvas();
-                    this.$watch('memorialData', () => this.saveToStorage(), { deep: true });
-                    this.$watch('mediaItems', () => this.saveToStorage(), { deep: true });
-                    this.$watch('timelineItems', () => this.saveToStorage(), { deep: true });
-                    this.$watch('guestbookEntries', () => this.saveToStorage(), { deep: true });
-                    this.$watch('candlesLit', () => this.saveToStorage());
-
-                    // Re-run lucide icons rendering
-                    this.$nextTick(() => { lucide.createIcons(); });
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
+                    });
                 },
 
                 saveToStorage() {
-                    const dataToSave = {
-                        memorialData: this.memorialData,
-                        mediaItems: this.mediaItems,
-                        timelineItems: this.timelineItems,
-                        guestbookEntries: this.guestbookEntries,
-                        candlesLit: this.candlesLit
-                    };
-                    localStorage.setItem('memorial_kids_daddy_data', JSON.stringify(dataToSave));
+                    try {
+                        const data = {
+                            memorialData: this.memorialData,
+                            mediaItems: this.mediaItems,
+                            timelineItems: this.timelineItems,
+                            guestbookEntries: this.guestbookEntries,
+                            candlesLit: this.candlesLit
+                        };
+                        localStorage.setItem('memorial_kids_daddy_data', JSON.stringify(data));
+                    } catch (e) {
+                        console.error('Storage quota warning:', e);
+                        this.showToast('Browser storage is full! Please click Export Backup to save your photos.');
+                    }
+                },
+
+                get filteredMedia() {
+                    if (this.mediaFilter === 'all') {
+                        return this.mediaItems;
+                    }
+                    if (this.mediaFilter === 'video') {
+                        return this.mediaItems.filter(item => item.type === 'video');
+                    }
+                    return this.mediaItems.filter(item => item.type === 'image' && (item.category || 'Uncategorized') === this.mediaFilter);
                 },
 
                 calculateDaysPassed() {
-                    const passDate = new Date('2015-09-20');
-                    const today = new Date();
-                    const diffTime = Math.abs(today - passDate);
-                    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    const passed = new Date('2015-09-20T00:00:00');
+                    const now = new Date();
+                    const diffTime = Math.abs(now - passed);
+                    return Math.floor(diffTime / (1000 * 60 * 60 * 24)).toLocaleString();
                 },
 
                 lightCandle() {
                     this.candlesLit++;
+                    this.saveToStorage();
+                    this.showToast('A virtual candle has been lit in loving memory.');
                 },
 
-                get filteredMedia() {
-                    if (this.mediaFilter === 'all') return this.mediaItems;
-                    return this.mediaItems.filter(item => item.type === this.mediaFilter);
-                },
-
-                handleFileUpload(event) {
-                    const files = Array.from(event.target.files);
-                    if (!files.length) return;
-                    
-                    this.selectedFiles = [];
-                    files.forEach(file => {
+                compressImage(file, maxWidth = 1000, quality = 0.78) {
+                    return new Promise((resolve) => {
                         const reader = new FileReader();
                         reader.onload = (e) => {
-                            this.selectedFiles.push({
-                                url: e.target.result,
-                                name: file.name.replace(/\.[^/.]+$/, "")
-                            });
+                            const img = new Image();
+                            img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                let width = img.width;
+                                let height = img.height;
+                                if (width > maxWidth) {
+                                    height = Math.round((height * maxWidth) / width);
+                                    width = maxWidth;
+                                }
+                                canvas.width = width;
+                                canvas.height = height;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, 0, 0, width, height);
+                                resolve(canvas.toDataURL('image/jpeg', quality));
+                            };
+                            img.onerror = () => resolve(e.target.result);
+                            img.src = e.target.result;
                         };
                         reader.readAsDataURL(file);
                     });
+                },
+
+                showToast(msg) {
+                    this.toastMessage = msg;
+                    this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+                    setTimeout(() => { this.toastMessage = ''; }, 4000);
+                },
+                async analyzePhotoWithAI(base64DataUrl, fallbackName) {
+                    const base64Only = base64DataUrl.split(',')[1];
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+                    const prompt = `Analyze this family memorial photo. Classify it into ONE of these exact categories:
+- "Daddy & Kids" (a man/father with children/babies)
+- "Mom & Daddy" (a couple, man and woman together)
+- "Family Together" (a group with both parents and children, or extended family)
+- "Growing Up" (vintage/childhood photo of a boy/young man growing up, or solo portrait)
+
+Also write a short, warm title describing the scene (e.g., "Dad and the kids at the park", "Mom and Daddy smiling together", "Family day outdoors") and a brief 1-sentence heartwarming caption for his kids.`;
+
+                    const payload = {
+                        contents: [{
+                            role: "user",
+                            parts: [
+                                { text: prompt },
+                                { inlineData: { mimeType: "image/jpeg", data: base64Only } }
+                            ]
+                        }],
+                        generationConfig: {
+                            responseMimeType: "application/json",
+                            responseSchema: {
+                                type: "OBJECT",
+                                properties: {
+                                    category: {
+                                        type: "STRING",
+                                        enum: ["Daddy & Kids", "Mom & Daddy", "Family Together", "Growing Up"]
+                                    },
+                                    title: { type: "STRING" },
+                                    caption: { type: "STRING" }
+                                },
+                                required: ["category", "title", "caption"]
+                            }
+                        }
+                    };
+
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (!response.ok) throw new Error('API unavailable');
+                        const result = await response.json();
+                        const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (text) {
+                            return JSON.parse(text);
+                        }
+                    } catch (err) {
+                        // Fallback smart guess from filename if offline
+                        const lower = fallbackName.toLowerCase();
+                        let cat = 'Uncategorized';
+                        if (lower.includes('kid') || lower.includes('baby') || lower.includes('son') || lower.includes('daughter')) cat = 'Daddy & Kids';
+                        else if (lower.includes('wedding') || lower.includes('us') || lower.includes('couple')) cat = 'Mom & Daddy';
+                        else if (lower.includes('family')) cat = 'Family Together';
+                        else if (lower.includes('young') || lower.includes('child') || lower.includes('school')) cat = 'Growing Up';
+                        return {
+                            category: cat,
+                            title: fallbackName || 'Cherished Memory',
+                            caption: ''
+                        };
+                    }
+                    return { category: 'Uncategorized', title: fallbackName || 'Cherished Memory', caption: '' };
+                },
+
+                async handleFileUpload(event) {
+                    const files = Array.from(event.target.files).filter(f => f.type.startsWith('image/'));
+                    if (!files.length) return;
+                    
+                    this.isProcessingFiles = true;
+                    this.selectedFiles = [];
+                    
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+                        this.processingStatus = this.autoSortEnabled 
+                            ? `✨ Sorting & labeling photo ${i + 1} of ${files.length}...` 
+                            : `⏳ Preparing photo ${i + 1} of ${files.length}...`;
+
+                        const compressedUrl = await this.compressImage(file);
+                        
+                        if (this.autoSortEnabled) {
+                            const aiResult = await this.analyzePhotoWithAI(compressedUrl, cleanName);
+                            this.selectedFiles.push({
+                                url: compressedUrl,
+                                name: aiResult.title,
+                                caption: aiResult.caption,
+                                category: aiResult.category
+                            });
+                        } else {
+                            this.selectedFiles.push({
+                                url: compressedUrl,
+                                name: cleanName,
+                                caption: '',
+                                category: this.newMedia.category || 'Uncategorized'
+                            });
+                        }
+                    }
+                    this.isProcessingFiles = false;
+                    this.processingStatus = '';
                 },
 
                 handlePortraitUpload(event) {
@@ -828,23 +1017,26 @@
                 addMediaItem() {
                     if (this.newMedia.type === 'image') {
                         if (this.selectedFiles.length > 0) {
-                            // Bulk add photos
+                            // Bulk add photos with their auto-sorted categories & titles
                             this.selectedFiles.forEach((fileObj, idx) => {
                                 this.mediaItems.unshift({
                                     id: Date.now() + idx,
                                     type: 'image',
+                                    category: this.autoSortEnabled ? fileObj.category : (this.newMedia.category || 'Uncategorized'),
                                     url: fileObj.url,
                                     title: this.newMedia.title || fileObj.name || 'Special Memory',
-                                    caption: this.newMedia.caption || '',
+                                    caption: this.newMedia.caption || fileObj.caption || '',
                                     date: new Date().toISOString().split('T')[0]
                                 });
                             });
+                            this.showToast(`Added & sorted ${this.selectedFiles.length} photo(s) into the gallery!`);
                             this.selectedFiles = [];
                         } else if (this.newMedia.url) {
                             // Single URL photo
                             this.mediaItems.unshift({
                                 id: Date.now(),
                                 type: 'image',
+                                category: this.newMedia.category || 'Uncategorized',
                                 url: this.newMedia.url,
                                 title: this.newMedia.title || 'Special Memory',
                                 caption: this.newMedia.caption || '',
@@ -858,16 +1050,69 @@
                         this.mediaItems.unshift({
                             id: Date.now(),
                             type: 'video',
+                            category: 'video',
                             url: this.newMedia.url,
                             title: this.newMedia.title || 'Special Video',
                             caption: this.newMedia.caption || '',
                             date: new Date().toISOString().split('T')[0]
                         });
+                        this.showToast('Video added to the Media Vault!');
                     }
 
-                    this.newMedia = { type: 'image', url: '', title: '', caption: '' };
+                    this.newMedia = { type: 'image', category: 'Uncategorized', url: '', title: '', caption: '' };
                     this.openMediaModal = false;
-                    this.$nextTick(() => { lucide.createIcons(); });
+                    this.saveToStorage();
+                    this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+                },
+
+                deleteMedia(id) {
+                    this.mediaItems = this.mediaItems.filter(m => m.id !== id);
+                    this.saveToStorage();
+                },
+
+                addTimelineItem() {
+                    if (!this.newTimeline.title || !this.newTimeline.year) return;
+                    this.timelineItems.unshift({
+                        id: Date.now(),
+                        year: this.newTimeline.year,
+                        title: this.newTimeline.title,
+                        description: this.newTimeline.description
+                    });
+                    this.newTimeline = { year: '', title: '', description: '' };
+                    this.openTimelineModal = false;
+                    this.saveToStorage();
+                    this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+                },
+
+                deleteTimelineItem(id) {
+                    this.timelineItems = this.timelineItems.filter(t => t.id !== id);
+                    this.saveToStorage();
+                },
+
+                addGuestbookEntry() {
+                    if (!this.newGuestbook.name || !this.newGuestbook.message) return;
+                    this.guestbookEntries.unshift({
+                        id: Date.now(),
+                        name: this.newGuestbook.name,
+                        relation: this.newGuestbook.relation || 'Family Friend',
+                        message: this.newGuestbook.message,
+                        date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                    });
+                    this.newGuestbook = { name: '', relation: '', message: '' };
+                    this.openGuestbookModal = false;
+                    this.saveToStorage();
+                    this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+                },
+
+                deleteGuestbookEntry(id) {
+                    this.guestbookEntries = this.guestbookEntries.filter(g => g.id !== id);
+                    this.saveToStorage();
+                },
+
+                saveHeaderDetails() {
+                    this.openEditHeader = false;
+                    this.saveToStorage();
+                    this.showToast('Memorial details updated!');
                 },
 
                 deleteMedia(id) {
@@ -957,9 +1202,9 @@
                             if (parsed.guestbookEntries) this.guestbookEntries = parsed.guestbookEntries;
                             if (parsed.candlesLit) this.candlesLit = parsed.candlesLit;
                             this.saveToStorage();
-                            alert('Memorial data restored successfully!');
+                            this.showToast('Memorial data restored successfully!');
                         } catch (err) {
-                            alert('Invalid backup file format.');
+                            this.showToast('Invalid backup file format.');
                         }
                     };
                     reader.readAsText(file);
